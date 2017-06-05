@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/dubbo_client" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dubbo_server" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/outstanding" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redisson-master" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redisson-master/redisson" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redisson-master/redisson-all" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redisson-master/redisson-tomcat" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redisson-master/redisson-tomcat/redisson-tomcat-6" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redisson-master/redisson-tomcat/redisson-tomcat-7" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/redisson-master/redisson-tomcat/redisson-tomcat-8" charset="UTF-8" />
+  </component>
+</project>

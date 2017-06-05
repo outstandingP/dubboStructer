@@ -1,0 +1,561 @@
+package com.outstanding.util;
+
+import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
+
+import com.outstanding.redis.RedisUtil;
+import org.apache.commons.lang.StringUtils;
+import redis.clients.jedis.*;
+import redis.clients.util.SafeEncoder;
+
+/**
+ * Redis 工具类
+ */
+public class JedisUtil {
+
+    protected static ReentrantLock lockPool = new ReentrantLock();
+    protected static ReentrantLock lockJedis = new ReentrantLock();
+
+    /**Redis服务器IP*/
+    private static String ADDR_ARRAY = "192.168.16.70,192.168.16.70";
+
+    /**Redis的端口号*/
+    private static int PORT = 6379;
+
+    /**访问密码*/
+    private static String AUTH = null;
+
+    /**
+     * 访问数据库:java从15倒叙使用
+     */
+    private static int database = 15;
+    /**
+     * 可用连接实例的最大数目，默认值为8；
+     * 如果赋值为-1，则表示不限制；如果pool已经分配了maxActive个jedis实例，则此时pool的状态为exhausted(耗尽)。
+     */
+    private static int MAX_ACTIVE = 8;
+
+    /**控制一个pool最多有多少个状态为idle(空闲的)的jedis实例，默认值也是8。*/
+    private static int MAX_IDLE = 8;
+
+    /**等待可用连接的最大时间，单位毫秒，默认值为-1，表示永不超时。如果超过等待时间，则直接抛出JedisConnectionException；*/
+    private static int MAX_WAIT = 3000;
+
+    /**超时时间*/
+    private static int TIMEOUT = 10000;
+
+    /**在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的；*/
+    private static boolean TEST_ON_BORROW = false;
+
+    private static JedisPool jedisPool = null;
+
+    /**
+     * redis过期时间,以秒为单位
+     */
+    public final static int EXRP_HOUR = 60 * 60;			/**一小时*/
+    public final static int EXRP_DAY = 60 * 60 * 24;		/**一天*/
+    public final static int EXRP_MONTH = 60 * 60 * 24 * 30;	/**一个月*/
+
+    /**
+     * 初始化Redis连接池
+     */
+    private static void initialPool() {
+        try {
+            JedisPoolConfig config = new JedisPoolConfig();
+            config.setMaxActive(MAX_ACTIVE);
+            config.setMaxIdle(MAX_IDLE);
+            config.setMaxWait(MAX_WAIT);
+            config.setTestOnBorrow(TEST_ON_BORROW);
+            jedisPool = new JedisPool(config, ADDR_ARRAY, PORT, TIMEOUT, AUTH, database);
+        } catch (Exception e) {
+            System.out.println("First create JedisPool error : " + e);
+            try {
+                //如果第一个IP异常，则访问第二个IP
+                JedisPoolConfig config = new JedisPoolConfig();
+                config.setMaxActive(MAX_ACTIVE);
+                config.setMaxIdle(MAX_IDLE);
+                config.setMaxWait(MAX_WAIT);
+                config.setTestOnBorrow(TEST_ON_BORROW);
+                jedisPool = new JedisPool(config, ADDR_ARRAY.split(",")[1], PORT, TIMEOUT, AUTH, database);
+            } catch (Exception e2) {
+                System.out.println("Second create JedisPool error : " + e2);
+            }
+        }
+    }
+
+    /**
+     * 在多线程环境同步初始化
+     */
+    private static void poolInit() {
+        lockPool.lock();
+        try {
+            if (jedisPool == null) {
+                initialPool();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lockPool.unlock();
+        }
+    }
+
+    public static Jedis getJedis() {
+        lockJedis.lock();
+        if (jedisPool == null) {
+            poolInit();
+        }
+        Jedis jedis = null;
+        try {
+            if (jedisPool != null) {
+                jedis = jedisPool.getResource();
+            }
+        } catch (Exception e) {
+            System.out.println("Get jedis error : " + e);
+        } finally {
+            returnResource(jedis);
+            lockJedis.unlock();
+        }
+        return jedis;
+    }
+
+    /**
+     * 释放jedis资源
+     *
+     * @param jedis
+     */
+    public static void returnResource(final Jedis jedis) {
+        if (jedis != null && jedisPool != null) {
+            jedisPool.returnResource(jedis);
+        }
+    }
+
+    /**
+     * 设置 String
+     *
+     * @param key
+     * @param value
+     */
+//    public synchronized static void setString(String key, String value) {
+//        try {
+//            value = StringUtils.isEmpty(value) ? "" : value;
+//            getJedis().set(key, value);
+//        } catch (Exception e) {
+//            System.out.println("Set key error : " + e);
+//        }
+//    }
+
+    /**
+     * 设置 过期时间
+     *
+     * @param key
+     * @param seconds 以秒为单位
+     * @param value
+     */
+    public synchronized static void setString(String key, int seconds, String value) {
+        try {
+            value = StringUtils.isEmpty(value) ? "" : value;
+            getJedis().setex(key, seconds, value);
+        } catch (Exception e) {
+            System.out.println("Set keyex error : " + e);
+        }
+    }
+
+    /**
+     * 获取String值
+     *
+     * @param key
+     * @return value
+     */
+//    public synchronized static String getString(String key) {
+//        if (getJedis() == null || !getJedis().exists(key)) {
+//            return null;
+//        }
+//        return getJedis().get(key);
+//    }
+
+
+    /** ======================================Strings====================================== */
+
+    /**
+     * Set the string value as value of the key. The string can't be longer than
+     * 1073741824 bytes (1 GB).
+     * Time complexity: O(1)
+     * @param key
+     * @param value
+     * @return Status code reply
+     */
+    public String setString(String key, String value) {
+        String status = null;
+        try {
+            value = StringUtils.isEmpty(value) ? "" : value;
+            status = getJedis().set(key, value);
+        } catch (Exception e) {
+            System.out.println("Set key error : " + e);
+        }
+        return status;
+    }
+
+    /**
+     * Get the value of the specified key. If the key does not exist the special
+     * value 'nil' is returned. If the value stored at key is not a string an
+     * error is returned because GET can only handle string values.
+     * Time complexity: O(1)
+     * @param key
+     * @return Bulk reply
+     */
+    public String getString(String key) {
+        Jedis jedis = getJedis();
+        if (jedis == null || !jedis.exists(key)) {
+            return null;
+        }
+        return jedis.get(key);
+    }
+
+    /**
+     * This Stirng的批量更新
+     * @param pairs
+     */
+    public List<Object> batchSetString(final List<RedisUtil.Pair<String, String>> pairs) {
+        List<Object> status = new ArrayList<Object>();
+        Jedis jedis = getJedis();
+        for (RedisUtil.Pair<String, String> pair : pairs) {
+            status.add(jedis.set(pair.getKey(), pair.getValue()));
+        }
+        return status;
+    }
+
+    /**
+     * This String的批量获得
+     * @param keys
+     * @return
+     */
+    public List<String> batchGetString(final List<String> keys) {
+        List<Object> dataList = new ArrayList<Object>();
+        Jedis jedis = getJedis();
+        for (String key : keys) {
+            dataList.add(jedis.get(key));
+        }
+
+        List<String> rtnDataList = new ArrayList<String>();
+        for (Object data : dataList) {
+            rtnDataList.add(STRING.build(data));
+        }
+        return rtnDataList;
+    }
+
+    /** ======================================Hashes====================================== */
+
+    /**
+     * Set the specified hash field to the specified value.
+     * If key does not exist, a new key holding a hash is created.
+     * Time complexity: O(1)
+     * @param key
+     * @param field
+     * @param value
+     * @return If the field already exists, and the HSET just produced an update
+     *         of the value, 0 is returned, otherwise if a new field is created
+     *         1 is returned.
+     */
+    public long hashSet(String key, String field, String value) {
+        long count = getJedis().hset(key, field, value);
+        return count;
+    }
+
+    /**
+     * If key holds a hash, retrieve the value associated to the specified
+     * field.
+     * If the field is not found or the key does not exist, a special 'nil'
+     * value is returned.
+     * Time complexity:O(1)
+     * @param key
+     * @param field
+     * @return Bulk reply
+     */
+    public String hashGet(String key, String field) {
+        String value = getJedis().hget(key, field);
+        return value;
+    }
+
+    /**
+     * Set the respective fields to the respective values. HMSET replaces old
+     * values with new values.
+     * If key does not exist, a new key holding a hash is created.
+     * Time complexity: O(N) (with N being the number of fields)
+     * @param key
+     * @param hash
+     * @return Return OK or Exception if hash is empty
+     */
+    public String hashMultipleSet(String key, Map<String, String> hash) {
+        String status = getJedis().hmset(key, hash);
+        return status;
+    }
+
+    /**
+     * Retrieve the values associated to the specified fields.
+     * If some of the specified fields do not exist, nil values are returned.
+     * Non existing keys are considered like empty hashes.
+     * Time complexity: O(N) (with N being the number of fields)
+     * @param key
+     * @param fields
+     * @return Multi Bulk Reply specifically a list of all the values associated
+     *         with the specified fields, in the same order of the request.
+     */
+    public List<String> hashMultipleGet(String key, String... fields) {
+        List<String> dataList = getJedis().hmget(key, fields);
+        return dataList;
+    }
+
+    /**
+     * This 批量的HashMultipleSet
+     * @param pairs
+     * @return
+     */
+    public List<Object> batchHashMultipleSet(final List<RedisUtil.Pair<String, Map<String, String>>> pairs) {
+        Jedis jedis = getJedis();
+        List<Object> status = new ArrayList<Object>();
+        for (RedisUtil.Pair<String, Map<String, String>> pair : pairs) {
+            status.add(jedis.hmset(pair.getKey(),pair.getValue()));
+        }
+        return status;
+    }
+
+    /**
+     * This 批量的HashMultipleGet
+     * @param pairs
+     * @return
+     */
+    public List<List<String>> batchHashMultipleGet(final List<RedisUtil.Pair<String, String[]>> pairs) {
+        Jedis jedis = getJedis();
+        List<Object> dataList = new ArrayList<Object>();
+        for (RedisUtil.Pair<String, String[]> pair : pairs) {
+            dataList.add(jedis.hmget(pair.getKey(), pair.getValue()));
+        }
+
+        List<List<String>> rtnDataList = new ArrayList<List<String>>();
+        for (Object data : dataList) {
+            rtnDataList.add(STRING_LIST.build(data));
+        }
+        return rtnDataList;
+    }
+
+    /**
+     * Return all the fields and associated values in a hash.
+     * Time complexity: O(N), where N is the total number of entries
+     * @param key
+     * @return All the fields and values contained into a hash.
+     */
+    public Map<String, String> hashGetAll(String key) {
+        Map<String, String> hash = getJedis().hgetAll(key);
+        return hash;
+    }
+
+    /**
+     * This 批量的hashMultipleGet
+     * @param keys
+     * @return
+     */
+    public List<Map<String, String>> batchHashGetAll(final List<String> keys) {
+        Jedis jedis = getJedis();
+        List<Object> dataList = new ArrayList<Object>();
+        for (String key : keys) {
+            dataList.add(jedis.hgetAll(key));
+        }
+        List<Map<String, String>> rtnDataList = new ArrayList<Map<String, String>>();
+        for (Object data : dataList) {
+            rtnDataList.add(STRING_MAP.build(data));
+        }
+        return rtnDataList;
+    }
+
+    /** ======================================Builder====================================== */
+
+    public static final Builder<Double> DOUBLE = new Builder<Double>() {
+
+        @Override
+        public Double build(Object data) {
+            return Double.valueOf(STRING.build(data));
+        }
+
+        @Override
+        public String toString() {
+            return "double";
+        }
+    };
+
+    public static final Builder<Boolean> BOOLEAN = new Builder<Boolean>() {
+
+        @Override
+        public Boolean build(Object data) {
+            return ((Long) data) == 1;
+        }
+
+        @Override
+        public String toString() {
+            return "boolean";
+        }
+    };
+
+    public static final Builder<Long> LONG = new Builder<Long>() {
+
+        @Override
+        public Long build(Object data) {
+            return (Long) data;
+        }
+
+        @Override
+        public String toString() {
+            return "long";
+        }
+
+    };
+
+    public static final Builder<String> STRING = new Builder<String>() {
+
+        @Override
+        public String build(Object data) {
+            return SafeEncoder.encode((byte[]) data);
+        }
+
+        @Override
+        public String toString() {
+            return "string";
+        }
+
+    };
+
+    public static final Builder<List<String>> STRING_LIST = new Builder<List<String>>() {
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<String> build(Object data) {
+            if (null == data) {
+                return null;
+            }
+            List<byte[]> l = (List<byte[]>) data;
+            final ArrayList<String> result = new ArrayList<String>(l.size());
+            for (final byte[] barray : l) {
+                if (barray == null) {
+                    result.add(null);
+                } else {
+                    result.add(SafeEncoder.encode(barray));
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "List<String>";
+        }
+
+    };
+
+    public static final Builder<Map<String, String>> STRING_MAP = new Builder<Map<String, String>>() {
+        @Override
+        @SuppressWarnings("unchecked")
+        public Map<String, String> build(Object data) {
+            final List<byte[]> flatHash = (List<byte[]>) data;
+            final Map<String, String> hash = new HashMap<String, String>();
+            final Iterator<byte[]> iterator = flatHash.iterator();
+            while (iterator.hasNext()) {
+                hash.put(SafeEncoder.encode(iterator.next()), SafeEncoder.encode(iterator.next()));
+            }
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return "Map<String, String>";
+        }
+    };
+
+    public static final Builder<Set<String>> STRING_SET = new Builder<Set<String>>() {
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public Set<String> build(Object data) {
+            if (null == data) {
+                return null;
+            }
+            List<byte[]> l = (List<byte[]>) data;
+            final Set<String> result = new HashSet<String>(l.size());
+            for (final byte[] barray : l) {
+                if (barray == null) {
+                    result.add(null);
+                } else {
+                    result.add(SafeEncoder.encode(barray));
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Set<String>";
+        }
+
+    };
+
+    public static final Builder<Set<String>> STRING_ZSET = new Builder<Set<String>>() {
+        @Override
+        @SuppressWarnings("unchecked")
+        public Set<String> build(Object data) {
+            if (null == data) {
+                return null;
+            }
+            List<byte[]> l = (List<byte[]>) data;
+            final Set<String> result = new LinkedHashSet<String>(l.size());
+            for (final byte[] barray : l) {
+                if (barray == null) {
+                    result.add(null);
+                } else {
+                    result.add(SafeEncoder.encode(barray));
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "ZSet<String>";
+        }
+    };
+
+    /** ======================================Other====================================== */
+
+    /**
+     * The Pair represents 键值对
+     * @version $Id$
+     * @author fengjc
+     * @param <K>
+     * @param <V>
+     */
+    public class Pair<K, V> {
+
+        private K key;
+        private V value;
+
+        public Pair(K key, V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public K getKey() {
+            return this.key;
+        }
+
+        public void setKey(K key) {
+            this.key = key;
+        }
+
+        public V getValue() {
+            return this.value;
+        }
+
+        public void setValue(V value) {
+            this.value = value;
+        }
+
+    }
+}
+

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="Osmorc" url="file://$PROJECT_DIR$/redisson-master/redisson" />
+    <file type="web" url="file://$PROJECT_DIR$/dubbo_client" />
+    <file type="web" url="file://$PROJECT_DIR$/dubbo_server" />
+    <file type="web" url="file://$PROJECT_DIR$/outstanding" />
+  </component>
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/outstanding/pom.xml" />
+        <option value="$PROJECT_DIR$/redisson-master/pom.xml" />
+        <option value="$PROJECT_DIR$/dubbo_server/pom.xml" />
+        <option value="$PROJECT_DIR$/dubbo_client/pom.xml" />
+        <option value="$PROJECT_DIR$/dubbo_provider/pom.xml" />
+      </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/redisson-master/pom.xml" />
+        <option value="$PROJECT_DIR$/redisson-master/redisson-all/pom.xml" />
+        <option value="$PROJECT_DIR$/redisson-master/redisson-tomcat/pom.xml" />
+        <option value="$PROJECT_DIR$/redisson-master/redisson-tomcat/redisson-tomcat-6/pom.xml" />
+        <option value="$PROJECT_DIR$/redisson-master/redisson-tomcat/redisson-tomcat-7/pom.xml" />
+        <option value="$PROJECT_DIR$/redisson-master/redisson-tomcat/redisson-tomcat-8/pom.xml" />
+        <option value="$PROJECT_DIR$/redisson-master/redisson/pom.xml" />
+      </set>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_3" default="false" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>

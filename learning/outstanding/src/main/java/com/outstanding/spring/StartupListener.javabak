@@ -1,0 +1,88 @@
+package com.outstanding.spring;
+
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.stereotype.Component;
+import tv.fun.linda.status.atom.service.StatusSendBackService;
+import tv.fun.linda.status.thread.StatusProcessThreadRunner;
+import tv.fun.linda.status.utils.ConfUtil;
+
+import javax.annotation.Resource;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Created by lizq1 on 2017-3-9.
+ */
+@Component
+public class StartupListener implements
+        ApplicationListener<ContextRefreshedEvent> {
+    private static Logger logger = LogManager.getLogger(StartupListener.class);
+
+    //static boolean isThreadStart = false;
+
+    @Resource
+    StatusSendBackService statusSendBackService;
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent arg0) {
+
+        logger.info("-----容器载入完成,刷新状态-----" + arg0.getSource().getClass().getName());
+
+        if (arg0.getApplicationContext().getParent() == null) {//root application context 没有parent，他就是老大.
+            //需要执行的逻辑代码，当spring容器初始化完成后就会执行该方法。
+            startStatusThread();
+        }
+    }
+
+
+    private synchronized void startStatusThread() {
+        try {
+            /*synchronized (this) {
+                if (isThreadStart) {
+                    return;
+                } else {
+                    isThreadStart = true;
+                }
+            }
+            */
+
+
+
+            logger.info("-----go into startStatusThread-----");
+
+            boolean isThreadStart = ConfUtil.isStatusThreadStart;
+
+            if (isThreadStart) {
+                return;
+            }
+
+            //if (!isThreadStart) {
+            //isThreadStart = true;
+            logger.info("-----创建并开启定时线程-Start: isStart=" + isThreadStart);
+
+            isThreadStart = ConfUtil.isStatusThreadStart = true;
+
+            //isThreadStart = true;
+
+            //创建并开启定时线程
+            ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
+
+            StatusProcessThreadRunner statusProcessThreadRunner = new StatusProcessThreadRunner();
+            statusProcessThreadRunner.setStatusSendBackService(statusSendBackService);
+
+            scheduledThreadPool.scheduleWithFixedDelay(statusProcessThreadRunner, 3, 3, TimeUnit.MINUTES);
+
+
+            logger.info("-----创建并开启定时线程-Finished; isStart=" + isThreadStart);
+            //}
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("-----所有Bean载入完成,创建并开启定时线程,处理状态 throw exception:-----" + e.getMessage());
+        }
+    }
+
+}

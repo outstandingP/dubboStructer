@@ -1,0 +1,175 @@
+package com.outstanding.servletTest;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Enumeration;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+/**
+ * Created by songll on 2017/2/4.
+ */
+public class TestServlet extends HttpServlet {
+
+    public TestServlet() {
+        super();
+    }
+
+    public void destroy() {
+        super.destroy();
+    }
+
+
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">");
+        out.println("<HTML>");
+        out.println("  <HEAD><TITLE>A Servlet</TITLE></HEAD>");
+        out.println("  <BODY>");
+        out.print("hello world !  This is ");
+        out.print(this.getClass());
+        out.println(", using the GET method!");
+        out.println("</BODY>");
+        out.println("</HTML>");
+        out.flush();
+        out.close();
+    }
+
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">");
+        out.println("<HTML>");
+        out.println("  <HEAD><TITLE>A Servlet</TITLE></HEAD>");
+        out.println("  <BODY>");
+        out.print("  hello world!  This is ");
+        out.print(this.getClass());
+        out.println(", using the POST method");
+        out.println("  </BODY>");
+        out.println("</HTML>");
+        out.flush();
+        out.close();
+    }
+
+    @Override
+    protected long getLastModified(HttpServletRequest req) {
+        return super.getLastModified(req);
+    }
+
+    @Override
+    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doHead(req, resp);
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doPut(req, resp);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doDelete(req, resp);
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doOptions(req, resp);
+    }
+
+    @Override
+    protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doTrace(req, resp);
+    }
+
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.service(req, resp);
+    }
+
+    @Override
+    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+        super.service(req, res);
+    }
+
+    @Override
+    public String getInitParameter(String name) {
+        return super.getInitParameter(name);
+    }
+
+    @Override
+    public Enumeration<String> getInitParameterNames() {
+        return super.getInitParameterNames();
+    }
+
+    @Override
+    public ServletConfig getServletConfig() {
+        return super.getServletConfig();
+    }
+
+    @Override
+    public ServletContext getServletContext() {
+        return super.getServletContext();
+    }
+
+    @Override
+    public String getServletInfo() {
+        return super.getServletInfo();
+    }
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+    }
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+    }
+
+    @Override
+    public void log(String msg) {
+        super.log(msg);
+    }
+
+    @Override
+    public void log(String message, Throwable t) {
+        super.log(message, t);
+    }
+
+    @Override
+    public String getServletName() {
+        return super.getServletName();
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+    }
+}

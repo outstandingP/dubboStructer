@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="dubbo_client" />
+        <module name="dubbo_provider" />
+        <module name="dubbo_server" />
+        <module name="outstanding" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="dubbo_client" target="1.5" />
+      <module name="dubbo_provider" target="1.5" />
+      <module name="dubbo_server" target="1.5" />
+      <module name="outstanding" target="1.6" />
+      <module name="redisson" target="1.6" />
+      <module name="redisson-all" target="1.5" />
+      <module name="redisson-parent" target="1.5" />
+      <module name="redisson-tomcat" target="1.6" />
+      <module name="redisson-tomcat-6" target="1.6" />
+      <module name="redisson-tomcat-7" target="1.6" />
+      <module name="redisson-tomcat-8" target="1.6" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312"/>
+    <title>接口调用耗时统计</title>
+    <style type="text/css">
+        <!--
+        .STYLE3 {
+            font-size: 24px
+        }
+
+        -->
+        td {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+<p>
+<h3>统计日期：" + new SimpleDateFormat("yyyy-MM-dd").format(new Date(new Date().getTime() - 24 * 60 * 60 * 1000)) +
+    "&nbsp;</h3></p>
+<table border="1" align="left">
+    <tr>
+        <td colspan="2" bgcolor="#00FFFF">
+            <div align="center"><span class="STYLE3">接口调用耗时统计</span></div>
+        </td>
+    </tr>
+    <tr>
+        <td><strong>列表类型</strong></td>
+        <td><strong>数量/值</strong></td>
+    </tr>
+    <tr>
+        <td>ps-v/m-status-materialId&nbsp;</td>
+        <td>22&nbsp;</td>
+    </tr>
+    <tr>
+        <td>processStatusTask-queue&nbsp;</td>
+        <td>22&nbsp;</td>
+    </tr>
+    <tr>
+        <td>processStatusTaskFailList&nbsp;</td>
+        <td>22&nbsp;</td>
+    </tr>
+    <tr>
+        <td>switch&nbsp;</td>
+        <td>22&nbsp;</td>
+    </tr>
+    <tr>
+        <td>RedisUtil.activeCount&nbsp;</td>
+        <td>22&nbsp;</td>
+    </tr>
+</table>
+</body>
+</html>
